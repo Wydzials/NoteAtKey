@@ -12,7 +12,7 @@
     <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 
-    
+
     <title>NoteAtKey</title>
     {% block head %}{% endblock %}
 </head>
@@ -22,9 +22,10 @@
         <header class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 border-bottom shadow-sm">
             <p class="h4 my-0 me-md-auto fw-normal">NoteAtKey</p>
             <nav class="my-2 my-md-0 me-md-3">
+                <a class="p-2 text-dark" href="{{ url_for('index') }}">Strona główna</a>
                 <a class="p-2 text-dark" href="#">Publiczne notatki</a>
             </nav>
-            <a class="btn btn-outline-primary" href="#">Logowanie</a>
+            <a class="btn btn-outline-primary" href="{{ url_for('login') }}">Logowanie</a>
         </header>
     </div>
 
@@ -32,7 +33,7 @@
         {% block body %}{% endblock %}
 
         <footer class="pt-4 my-md-5 pt-md-5 border-top">
-            <p>Szymon Wydziałkiewicz, 2020 <a href="https://github.com/Wydzials/NoteAtKey">GitHub</a></p>
+            <p>Szymon Wydziałkiewicz, 2020. <a href="https://github.com/Wydzials/NoteAtKey">GitHub</a></p>
         </footer>
     </main>
 
