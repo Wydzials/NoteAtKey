@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+
+{% block body %}
+
+<p class="display-3">NoteAtKey</p>
+<p class="lead">Twórz prywatne i publiczne notatki zupełnie za darmo!</p>
+
+<img src="{{ url_for('static', filename='notebook.jpeg') }}" class="img-fluid" alt="Notatnik">
+
+{% endblock %}

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from redis import Redis
 
 from os import getenv
@@ -15,8 +15,8 @@ app.config.from_object(__name__)
 
 
 @app.route('/')
-def hello_world():
-    return 'Hello, World! ' + str(db.get("test"))
+def index():
+    return render_template("index.html")
 
 
 if __name__ == "__main__":
