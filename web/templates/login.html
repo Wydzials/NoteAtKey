@@ -2,7 +2,7 @@
 
 
 {% block body %}
-<div class="row justify-content-center mt-5 mb-5">
+<div class="row justify-content-center py-4">
     <div class="col-4">
         <form class="mb-3" method="POST" id="form" action="{{ url_for('login') }}">
             <h1 class="h3 mb-3 fw-normal">Logowanie</h1>
@@ -18,7 +18,7 @@
             <button class="w-100 btn btn-lg btn-primary" type="submit">Zaloguj się</button>
         </form>
 
-        <p>Nie masz konta? <a href="{{ url_for('register') }}" >Zarejestruj się</a></p>
+        <p>Nie masz konta? <a href="{{ url_for('register') }}">Zarejestruj się</a></p>
     </div>
 </div>
 {% endblock %}

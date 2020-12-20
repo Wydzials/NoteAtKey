@@ -36,9 +36,24 @@
                         </li>
                     </ul>
                     <div class="d-flex">
-                        {% if "username" in session %}
-                        <span class="navbar-text mx-2">{{ session["username"] }}</span>
-                        <a class="btn btn-outline-primary" href="{{ url_for('logout') }}">Wyloguj</a>
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            {% if "username" in session %}
+                            <li class="nav-item dropdown">
+                                <a class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                    {{ session["username"] }}
+                                </a> 
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><h6 class="dropdown-header">Profil</h6></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('my_notes') }}">Moje notatki</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('settings') }}">Ustawienia</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item" href="{{ url_for('logout') }}">Wyloguj</a></li>
+                                </ul>
+                            </li>
+                        </ul>
                         {% else %}
                         <a class="btn btn-outline-primary" href="{{ url_for('login') }}">Logowanie</a>
                         {% endif %}
@@ -48,7 +63,7 @@
         </nav>
     </div>
 
-    <main class="container my-2">
+    <main class="container py-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="row justify-content-center">
