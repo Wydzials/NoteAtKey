@@ -1,6 +1,7 @@
 <!doctype html>
 
 <html lang="pl">
+
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -19,17 +20,35 @@
 
 <body>
     <div class="container">
-        <header class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 border-bottom shadow-sm">
-            <p class="h4 my-0 me-md-auto fw-normal">NoteAtKey</p>
-            <nav class="my-2 my-md-0 me-md-3">
-                <a class="p-2 text-dark" href="{{ url_for('index') }}">Strona główna</a>
-                <a class="p-2 text-dark" href="#">Publiczne notatki</a>
-            </nav>
-            <a class="btn btn-outline-primary" href="{{ url_for('login') }}">Logowanie</a>
-        </header>
+        <nav class="navbar px-3 mb-2 navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand text-primary lead" style="font-size: 2rem">NoteAtKey</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('index') }}">Strona główna</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Publiczne notatki</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex">
+                        {% if "username" in session %}
+                        <span class="navbar-text mx-2">{{ session["username"] }}</span>
+                        <a class="btn btn-outline-primary" href="{{ url_for('logout') }}">Wyloguj</a>
+                        {% else %}
+                        <a class="btn btn-outline-primary" href="{{ url_for('login') }}">Logowanie</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
     </div>
 
-    <main class="container">
+    <main class="container my-2">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="row justify-content-center">
@@ -37,7 +56,6 @@
                 {% for category, message in messages %}
                 <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                     {{ message }}
-
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zamknij"></button>
                 </div>
                 {% endfor %}
@@ -57,4 +75,5 @@
     <!-- Bootstrap javascript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
 </body>
+
 </html>
