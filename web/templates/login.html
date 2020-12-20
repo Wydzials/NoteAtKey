@@ -4,15 +4,15 @@
 {% block body %}
 <div class="row justify-content-center mt-5 mb-5">
     <div class="col-4">
-        <form class="mb-3">
+        <form class="mb-3" method="POST" id="form" action="{{ url_for('login') }}">
             <h1 class="h3 mb-3 fw-normal">Logowanie</h1>
 
             <div class="input-group mb-3">
-                <input type="text" id="username" class="form-control" placeholder="Nazwa użytkownika" autocomplete="off" required autofocus>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Nazwa użytkownika" autocomplete="off" required autofocus>
             </div>
 
             <div class="input-group mb-3">
-                <input type="password" id="password" class="form-control" placeholder="Hasło" required>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Hasło" required>
             </div>
 
             <button class="w-100 btn btn-lg btn-primary" type="submit">Zaloguj się</button>

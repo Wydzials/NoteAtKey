@@ -1,16 +1,12 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
-from redis import Redis
 
 from os import getenv
 from dotenv import load_dotenv
 import utils
+import db
 
 app = Flask(__name__)
 load_dotenv()
-
-cloud_url = getenv("REDIS_URL")
-db = Redis.from_url(cloud_url, decode_responses=True) if cloud_url else Redis(
-    host="redis", decode_responses=True)
 
 app.secret_key = "only for flash"
 app.config.from_object(__name__)
@@ -26,11 +22,33 @@ def login():
     if request.method == "GET":
         return render_template("login.html")
 
-    # TODO
     username = request.form.get("username")
     password = request.form.get("password")
 
-    return render_template("index.html")
+    correct = True
+
+    if not username or len(username) < 1:
+        flash("Nazwa użytkownika nie może być pusta.", "danger")
+        correct = False
+    
+    if not password or len(password) < 1:
+        flash("Hasło nie może być puste.", "danger")
+        correct = False
+    
+    if correct and not db.username_taken(username):
+        flash("Nieprawidłowa nazwa użytkownika.", "danger")
+        correct = False
+
+    if correct and not db.check_password(username, password):
+        flash("Nieprawidłowe hasło.", "danger")
+        correct = False
+
+    if correct:
+        flash("Zalogowano pomyślnie!", "success")
+        return redirect(url_for("index"))
+    else:
+        return redirect(url_for("login"))
+
 
 
 @app.route('/register', methods=["GET", "POST"])
@@ -66,7 +84,7 @@ def register(fields={}):
         correct = False
 
     try:
-        BITS_REQUIRED = 50
+        BITS_REQUIRED = 1 # DEBUG
         bits = round(utils.password_bits(password1))
         if bits < BITS_REQUIRED:
             flash(
@@ -77,8 +95,13 @@ def register(fields={}):
         flash("Nieprawidłowy znak w haśle. Dozwolone znaki to: \
             małe i duże litery, cyfry, znaki specjalne: \
             !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~.", "danger")
+    
+    if db.username_taken(username):
+        flash("Nazwa użytkownika jest zajęta.", "danger")
+        correct = False
 
     if correct:
+        db.create_user(username, email, password1)
         flash("Zarejestrowano pomyślnie!", "success")
         return redirect(url_for("index"))
     else:
