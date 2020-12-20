@@ -30,25 +30,28 @@ def login():
     if not username or len(username) < 1:
         flash("Nazwa użytkownika nie może być pusta.", "danger")
         correct = False
-    
+
     if not password or len(password) < 1:
         flash("Hasło nie może być puste.", "danger")
         correct = False
     
-    if correct and not db.username_taken(username):
-        flash("Nieprawidłowa nazwa użytkownika.", "danger")
-        correct = False
+    seconds_to_login = db.seconds_to_next_login(username)
+    if seconds_to_login > 0:
+        flash(f"Przed kolejną próbą logowania zaczekaj {seconds_to_login} sekund.", "danger")
+        return redirect(url_for("login"))
 
     if correct and not db.check_password(username, password):
-        flash("Nieprawidłowe hasło.", "danger")
+        flash("Nieprawidłowa nazwa użytkownika lub hasło.", "danger")
         correct = False
-
+        
     if correct:
+        db.save_login_attempt(username, True, ip())
         flash("Zalogowano pomyślnie!", "success")
         return redirect(url_for("index"))
     else:
+        if db.username_taken(username):
+            db.save_login_attempt(username, False, ip())
         return redirect(url_for("login"))
-
 
 
 @app.route('/register', methods=["GET", "POST"])
@@ -84,7 +87,7 @@ def register(fields={}):
         correct = False
 
     try:
-        BITS_REQUIRED = 1 # DEBUG
+        BITS_REQUIRED = 1  # DEBUG
         bits = round(utils.password_bits(password1))
         if bits < BITS_REQUIRED:
             flash(
@@ -95,7 +98,7 @@ def register(fields={}):
         flash("Nieprawidłowy znak w haśle. Dozwolone znaki to: \
             małe i duże litery, cyfry, znaki specjalne: \
             !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~.", "danger")
-    
+
     if db.username_taken(username):
         flash("Nazwa użytkownika jest zajęta.", "danger")
         correct = False
@@ -106,6 +109,13 @@ def register(fields={}):
         return redirect(url_for("index"))
     else:
         return render_template("register.html", fields={"username": username, "email": email})
+
+
+def ip():
+    if not request.environ.get('HTTP_X_FORWARDED_FOR'):
+        return request.environ['REMOTE_ADDR']
+    else:
+        return request.environ['HTTP_X_FORWARDED_FOR']
 
 
 if __name__ == "__main__":
