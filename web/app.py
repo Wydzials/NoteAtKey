@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
-
+from flask import Flask, render_template, request, \
+    flash, redirect, url_for, g, make_response
 from os import getenv
 from dotenv import load_dotenv
 import utils
@@ -10,6 +10,18 @@ load_dotenv()
 
 app.secret_key = "only for flash"
 app.config.from_object(__name__)
+
+
+@app.before_request
+def before():
+    session_id = request.cookies.get('session_id')
+    g.session = db.get_session(session_id)
+    print(g.session, flush=True)
+
+
+@app.context_processor
+def inject_dict_for_all_templates():
+    return dict(session=g.session)
 
 
 @app.route('/')
@@ -34,25 +46,36 @@ def login():
     if not password or len(password) < 1:
         flash("Hasło nie może być puste.", "danger")
         correct = False
-    
+
     seconds_to_login = db.seconds_to_next_login(username)
     if seconds_to_login > 0:
-        flash(f"Przed kolejną próbą logowania zaczekaj {seconds_to_login} sekund.", "danger")
+        flash(
+            f"Przed kolejną próbą logowania zaczekaj {seconds_to_login} sekund.", "danger")
         return redirect(url_for("login"))
 
     if correct and not db.check_password(username, password):
         flash("Nieprawidłowa nazwa użytkownika lub hasło.", "danger")
         correct = False
-        
+
     if correct:
         db.save_login_attempt(username, True, ip())
+
+        session_id = db.set_session(username)
+        response = make_response(redirect(url_for("index")))
+        response.set_cookie("session_id", session_id, httponly=True)
+
         flash("Zalogowano pomyślnie!", "success")
-        return redirect(url_for("index"))
+        return response
     else:
         if db.username_taken(username):
             db.save_login_attempt(username, False, ip())
         return redirect(url_for("login"))
 
+
+@app.route('/logout')
+def logout():
+    db.clear_session(g.session.get("username"))
+    return redirect(url_for("index"))
 
 @app.route('/register', methods=["GET", "POST"])
 def register(fields={}):
