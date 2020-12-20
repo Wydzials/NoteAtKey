@@ -134,6 +134,21 @@ def register(fields={}):
         return render_template("register.html", fields={"username": username, "email": email})
 
 
+@app.route("/my-notes")
+def my_notes():
+    return render_template("my-notes.html")
+
+
+@app.route("/settings")
+def settings():
+    if not g.session.get("username"):
+        return redirect(url_for("index"))
+    
+    data = db.get_user_data(g.session.get("username"))
+    return render_template("settings.html", user=data)
+
+
+
 def ip():
     if not request.environ.get('HTTP_X_FORWARDED_FOR'):
         return request.environ['REMOTE_ADDR']

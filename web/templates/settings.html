@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+
+{% block body %}
+
+<div class="row justify-content-center">
+    <h1 class="display-6 pb-3">Ustawienia konta</h1>
+
+    <div class="col-6">
+        <h3>Dane użytkownika</h3>
+
+        <ul class="list-group">
+            <li class="list-group-item">
+                <h6 class="my-0">Nazwa użytkownika</h6>
+                <p class="lead my-0">{{ user["username"] }}</p>
+            </li>
+
+            <li class="list-group-item">
+                <h6 class="my-0">Adres email</h6>
+                <p class="lead my-0">{{ user["email"] }}</p>
+            </li>
+
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col">
+                        <h6 class="my-0">Hasło</h6>
+                        <p class="lead my-0">**********</p>
+                    </div>
+                    <div class="col">
+                        <a class="btn btn-outline-primary float-end" href="#">
+                            Zmień hasło
+                        </a>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+    </div>
+
+    <div class="col-6">
+        <h3>Ostatnie logowania</h3>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Data i godzina</th>
+                    <th>Adres IP</th>
+                    <th>Udane?</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in user["login_attempts"] %}
+                <tr>
+                    <td>{{ attempt["datetime"] }}</td>
+                    <td>{{ attempt["ip"] }}</td>
+
+                    {% if attempt["success"] %}
+                    <td class="table-success">Tak</td>
+                    {% else %}
+                    <td class="table-danger">Nie</td>
+                    {% endif %}
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
