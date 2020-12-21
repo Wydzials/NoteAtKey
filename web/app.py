@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import utils
 import db
 
+
 app = Flask(__name__)
 load_dotenv()
 
@@ -17,7 +18,7 @@ def login_required(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
         if not g.get("session").get("username"):
-            flash("Aby wyświetlić tę stronę, musisz być zalogowany.", "danger")
+            flash("Sesja wygasła, zaloguj się ponownie.", "success")
             return redirect(url_for("index"))
 
         return function(*args, **kwargs)
@@ -164,12 +165,11 @@ def password_change():
     return redirect(url_for("password_change"))
 
 
-
 @app.route("/reset-password", methods=["GET", "POST"])
 def password_reset():
     if request.method == "GET":
         return render_template("forms/password_reset.html")
-    
+
     email = request.form.get("email")
 
     if not email:
@@ -181,7 +181,7 @@ def password_reset():
     if db.email_taken(email):
         token = db.request_password_reset(email)
         return render_template("forms/password_reset.html", token=token, email=email)
-    
+
     return render_template("forms/password_reset.html")
 
 
@@ -199,7 +199,7 @@ def password_reset_token(token):
         for error in errors:
             flash(error, "danger")
         return redirect(url_for("password_reset_token", token=token))
-        
+
     success = db.reset_password(email, token, password1)
     if success:
         flash("Hasło zostało zmienione", "success")
@@ -208,7 +208,6 @@ def password_reset_token(token):
         flash("Błędny adres email, lub prośba o zmianę hasła wygasła.", "danger")
         return redirect(url_for("password_reset_token", token=token))
 
-    
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

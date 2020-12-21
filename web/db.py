@@ -1,9 +1,11 @@
 from redis import Redis
 from os import getenv
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import bcrypt
 import secrets
+import pytz
+
 
 DEBUG = True
 
@@ -11,6 +13,7 @@ load_dotenv()
 cloud_url = getenv("REDIS_URL")
 db = Redis.from_url(cloud_url, decode_responses=True) if cloud_url else Redis(
     host="redis", decode_responses=True)
+
 
 LOGIN_ATTEMPTS_HISTORY_LENGTH = 10
 LOGIN_ATTEMPTS_CHECK_MINUTES = 10
@@ -40,7 +43,7 @@ def get_user_data(username):
     data = db.hgetall(f"user:{username}:profile")
     data["username"] = username
     data.pop("password", None)
-    data["login_attempts"] = get_login_attempts(username)
+    data["login_attempts"] = get_login_attempts_localized(username)
     return data
 
 
@@ -66,7 +69,7 @@ def email_taken(email):
 
 def save_login_attempt(username, success, ip):
     key = f"user:{username}:login-attempts"
-    timestamp = int(datetime.now().replace(microsecond=0).timestamp())
+    timestamp = int(datetime.now(pytz.utc).timestamp())
 
     db.lpush(key, f"{timestamp};{int(success)};{ip}")
     db.ltrim(key, 0, LOGIN_ATTEMPTS_HISTORY_LENGTH - 1)
@@ -80,11 +83,21 @@ def get_login_attempts(username):
         split = attempt.split(";")
         attempts.append(
             {
-                "datetime": datetime.fromtimestamp(int(split[0])),
+                "datetime": datetime.fromtimestamp(float(split[0]), tz=pytz.utc),
                 "success": bool(int(split[1])),
                 "ip": split[2]
             }
         )
+    return attempts
+
+
+def get_login_attempts_localized(username):
+    attempts = get_login_attempts(username)
+    for attempt in attempts:
+        localized = to_local_timezone(attempt.get("datetime"))
+        attempt["date"] = localized.date()
+        attempt["time"] = localized.time()
+        attempt.pop("datetime", None)
     return attempts
 
 
@@ -94,7 +107,7 @@ def count_failed_login_attempts(username):
     check_delta = timedelta(minutes=LOGIN_ATTEMPTS_CHECK_MINUTES)
 
     for attempt in attempts:
-        delta = datetime.now() - attempt.get("datetime")
+        delta = datetime.now(pytz.utc) - attempt.get("datetime")
         if not attempt.get("success") and delta < check_delta:
             count += 1
         else:
@@ -110,9 +123,9 @@ def seconds_to_next_login(username):
     count = count_failed_login_attempts(username)
 
     last = db.lindex(key, 0).split(";")
-    last = datetime.fromtimestamp(int(last[0]))
+    last = datetime.fromtimestamp(int(last[0]), tz=pytz.utc)
 
-    elapsed = (datetime.now() - last).seconds
+    elapsed = (datetime.now(pytz.utc) - last).seconds
     return max((count-2) * NEXT_LOGIN_SECONDS_PER_ATTEMPT - elapsed, 0)
 
 
@@ -137,7 +150,8 @@ def request_password_reset(email):
             break
 
     token = secrets.token_urlsafe(64)
-    hashed_token = bcrypt.hashpw(token.encode(), bcrypt.gensalt(rounds=BCRYPT_ROUNDS))
+    hashed_token = bcrypt.hashpw(
+        token.encode(), bcrypt.gensalt(rounds=BCRYPT_ROUNDS))
 
     key = f"password-reset:{email}"
     db.hset(key, "username", username)
@@ -199,3 +213,9 @@ def set_session_exp(username, seconds):
 
 def clear_session(username):
     set_session_exp(username, 0)
+
+
+def to_local_timezone(utc):
+    local = pytz.timezone("Europe/Warsaw")
+    local_dt = utc.replace(tzinfo=pytz.utc).astimezone(local)
+    return local.normalize(local_dt)

@@ -1,6 +1,7 @@
 import string
 import math
 from flask import request
+import pytz
 
 
 def password_bits(password):
@@ -8,7 +9,7 @@ def password_bits(password):
     uppercase = string.ascii_uppercase
     digits = string.digits
     special = "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
-    
+
     groups = [lowercase, uppercase, digits, special]
 
     for c in password:
