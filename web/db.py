@@ -56,6 +56,14 @@ def username_taken(username):
     return db.sismember("users", username)
 
 
+def email_taken(email):
+    for user in db.smembers("users"):
+        key = f"user:{user}:profile"
+        if email == db.hget(key, "email"):
+            return True
+    return False
+
+
 def save_login_attempt(username, success, ip):
     key = f"user:{username}:login-attempts"
     timestamp = int(datetime.now().replace(microsecond=0).timestamp())
@@ -118,6 +126,27 @@ def change_password(username, password):
 
     db.hset(key, "password", hashed_password)
     return True
+
+
+def get_password_reset_token(email):
+    username = 0
+    for user in db.smembers("users"):
+        key = f"user:{user}:profile"
+        if email == db.hget(key, "email"):
+            username = user
+            break
+
+    token = secrets.token_urlsafe(64)
+    db.set(f"password-reset:{token}", username, ex=30)
+    return token
+
+
+def reset_password(token, password):
+    username = db.get(f"password-reset:{token}")
+    if username:
+        change_password(username, password)
+        return True
+    return False
 
 
 # ---------------------------------------------- session

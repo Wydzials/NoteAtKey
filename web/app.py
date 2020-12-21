@@ -139,9 +139,9 @@ def settings():
 
 @app.route("/change-password", methods=["GET", "POST"])
 @login_required
-def change_password():
+def password_change():
     if request.method == "GET":
-        return render_template("change_password.html")
+        return render_template("password_change.html")
 
     username = g.session.get("username")
 
@@ -163,6 +163,49 @@ def change_password():
         flash(error, "danger")
     return redirect(url_for("change_password"))
 
+
+
+@app.route("/reset-password", methods=["GET", "POST"])
+def password_reset():
+    if request.method == "GET":
+        return render_template("password_reset.html")
+    
+    email = request.form.get("email")
+
+    if not email:
+        flash("Adres email jest wymagany.", "danger")
+        return redirect(url_for("password_reset"))
+
+    flash("Email z linkiem do zmiany hasła został wysłany.", "success")
+
+    if db.email_taken(email):
+        token = db.get_password_reset_token(email)
+        return render_template("password_reset.html", token=token, email=email)
+    
+    return render_template("password_reset.html")
+
+
+@app.route("/reset-password/<token>", methods=["GET", "POST"])
+def password_reset_token(token):
+    if request.method == "GET":
+        return render_template("password_reset2.html")
+
+    password1 = request.form.get("password1")
+    password2 = request.form.get("password2")
+
+    errors = utils.check_password(password1, password2)
+    if len(errors) > 0:
+        for error in errors:
+            flash(error, "danger")
+        return redirect(url_for("password_reset_token", token=token))
+        
+    success = db.reset_password(token, password1)
+    if success:
+        flash("Hasło zostało zmienione", "success")
+    else:
+        flash("Błędny link, lub prośba o zmianę hasła wygasła.", "danger")
+
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

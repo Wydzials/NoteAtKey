@@ -5,12 +5,13 @@
 
 <h1 class="h3 mb-3 fw-normal">Logowanie</h1>
 
-<div class="input-group mb-3">
-    <input type="text" id="username" name="username" class="form-control" placeholder="Nazwa użytkownika" autocomplete="off" required autofocus>
+<div class="mb-3">
+    <input type="text" class="form-control" name="username" id="username" placeholder="Nazwa użytkownika" autocomplete="off" required autofocus>
 </div>
 
-<div class="input-group mb-3">
-    <input type="password" id="password" name="password" class="form-control" placeholder="Hasło" required>
+<div class="mb-4">
+    <input type="password" class="form-control mb-1" name="password" id="password" placeholder="Hasło" required>
+    <p class="text-end"><a href="{{ url_for('password_reset') }}">Przypomnij hasło</a></p>
 </div>
 
 <button class="w-100 btn btn-lg btn-primary" type="submit">Zaloguj się</button>
