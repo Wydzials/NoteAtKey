@@ -53,7 +53,7 @@ def login():
             f"Przed kolejną próbą logowania zaczekaj {seconds_to_login} sekund.", "danger")
         return redirect(url_for("login"))
 
-    if correct and not db.check_password(username, password):
+    if correct and not db.check_credentials(username, password):
         flash("Nieprawidłowa nazwa użytkownika lub hasło.", "danger")
         correct = False
 
@@ -77,6 +77,7 @@ def logout():
     db.clear_session(g.session.get("username"))
     return redirect(url_for("index"))
 
+
 @app.route('/register', methods=["GET", "POST"])
 def register(fields={}):
     if request.method == "GET":
@@ -87,66 +88,67 @@ def register(fields={}):
     password1 = request.form.get("password1")
     password2 = request.form.get("password2")
 
-    correct = True
+    errors = check_password(password1, password2)
 
     if not (username and 3 <= len(username) <= 20 and username.isalpha()):
-        flash("Nieprawidłowa nazwa użytkownika.", "danger")
-        correct = False
+        errors.append("Nieprawidłowa nazwa użytkownika.")
 
     if not (email and 3 <= len(username) <= 50):
-        flash("Nieprawidłowy adres email.", "danger")
-        correct = False
-
-    if not password1 or not password2:
-        flash("Hasło nie może być puste.", "danger")
-        correct = False
-
-    if password1 != password2:
-        flash("Hasła są różne.", "danger")
-        correct = False
-
-    if len(password1) > 50:
-        flash("Hasło może mieć maksymalnie 50 znaków.", "danger")
-        correct = False
-
-    try:
-        BITS_REQUIRED = 1  # DEBUG
-        bits = round(utils.password_bits(password1))
-        if bits < BITS_REQUIRED:
-            flash(
-                f"Hasło jest zbyt słabe ({bits} bitów, wymagane minimum {BITS_REQUIRED} bitów).", "danger")
-            correct = False
-    except ValueError:
-        correct = False
-        flash("Nieprawidłowy znak w haśle. Dozwolone znaki to: \
-            małe i duże litery, cyfry, znaki specjalne: \
-            !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~.", "danger")
+        errors.append("Nieprawidłowy adres email.")
 
     if db.username_taken(username):
-        flash("Nazwa użytkownika jest zajęta.", "danger")
-        correct = False
+        errors.append("Nazwa użytkownika jest zajęta.")
 
-    if correct:
+    if len(errors) == 0:
         db.create_user(username, email, password1)
         flash("Zarejestrowano pomyślnie!", "success")
         return redirect(url_for("index"))
     else:
+        for error in errors:
+            flash(error, "danger")
         return render_template("register.html", fields={"username": username, "email": email})
 
 
 @app.route("/my-notes")
 def my_notes():
-    return render_template("my-notes.html")
+    return render_template("my_notes.html")
 
 
 @app.route("/settings")
 def settings():
     if not g.session.get("username"):
         return redirect(url_for("index"))
-    
+
     data = db.get_user_data(g.session.get("username"))
     return render_template("settings.html", user=data)
 
+
+@app.route("/change-password", methods=["GET", "POST"])
+def change_password():
+    if request.method == "GET":
+        return render_template("change_password.html")
+
+    username = g.session.get("username")
+    if not username:
+        return redirect(url_for("index"))
+
+    old = request.form.get("old-password")
+    new1 = request.form.get("password1")
+    new2 = request.form.get("password2")
+
+    errors = check_password(new1, new2)
+
+    if not db.check_credentials(g.session.get("username"), old):
+        errors.append("Nieprawidłowe stare hasło.")
+
+    if len(errors) == 0:
+        db.change_password(username, new1)
+        flash("Zmieniono hasło.", "success")
+        return redirect(url_for("settings"))
+
+    for error in errors:
+        flash(error, "danger")
+    return redirect(url_for("change_password"))
 
 
 def ip():
@@ -154,6 +156,32 @@ def ip():
         return request.environ['REMOTE_ADDR']
     else:
         return request.environ['HTTP_X_FORWARDED_FOR']
+
+
+def check_password(password1, password2):
+    errors = []
+
+    if not password1 or not password2:
+        errors.append("Hasło nie może być puste.")
+
+    if password1 != password2:
+        errors.append("Hasła są różne.")
+
+    if len(password1) > 50:
+        errors.append("Hasło może mieć maksymalnie 50 znaków.")
+
+    try:
+        BITS_REQUIRED = 1  # DEBUG
+        bits = round(utils.password_bits(password1))
+        if bits < BITS_REQUIRED:
+            errors.append(
+                f"Hasło jest zbyt słabe ({bits} bitów, wymagane minimum {BITS_REQUIRED} bitów).")
+    except ValueError:
+        errors.append("Nieprawidłowy znak w haśle. Dozwolone znaki to: \
+            małe i duże litery, cyfry, znaki specjalne: \
+            !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~.")
+
+    return errors
 
 
 if __name__ == "__main__":

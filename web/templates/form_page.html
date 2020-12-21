@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="row justify-content-center py-4">
+    <div class="col-4">
+        <form class="mb-3" method="POST" id="form">
+            {% block form %}
+            {% endblock %}
+        </form>
+
+        {% block below %}
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}

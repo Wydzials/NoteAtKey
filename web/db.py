@@ -18,12 +18,14 @@ NEXT_LOGIN_SECONDS_PER_ATTEMPT = 5
 SESSION_TOKEN_BYTES = 32
 SESSION_EXPIRE_SECONDS = 300
 
+BCRYPT_ROUNDS = 10 # DEBUG=10, RELEASE=14
+
 
 # ---------------------------------------------- login, register
 def create_user(username, email, password):
     key = f"user:{username}:profile"
     hashed_password = bcrypt.hashpw(
-        password.encode(), bcrypt.gensalt(rounds=10))  # DEBUG, rounds=14
+        password.encode(), bcrypt.gensalt(rounds=BCRYPT_ROUNDS))
 
     db.hset(key, "email", email)
     db.hset(key, "password", hashed_password)
@@ -38,7 +40,7 @@ def get_user_data(username):
     return data
 
 
-def check_password(username, password):
+def check_credentials(username, password):
     if not db.sismember("users", username):
         return False
 
@@ -100,6 +102,18 @@ def seconds_to_next_login(username):
 
     elapsed = (datetime.now() - last).seconds
     return max((count-2) * NEXT_LOGIN_SECONDS_PER_ATTEMPT - elapsed, 0)
+
+
+def change_password(username, password):
+    if not username_taken(username):
+        return False
+
+    key = f"user:{username}:profile"
+    hashed_password = bcrypt.hashpw(
+        password.encode(), bcrypt.gensalt(rounds=BCRYPT_ROUNDS))
+
+    db.hset(key, "password", hashed_password)
+    return True
 
 
 # ---------------------------------------------- session
