@@ -1,5 +1,6 @@
 import string
 import math
+from flask import request
 
 
 def password_bits(password):
@@ -26,3 +27,36 @@ def password_bits(password):
                 break
     combinations = pow(sum, len(password)) or 1
     return(math.log2(combinations))
+
+
+def check_password(password1, password2):
+    errors = []
+
+    if not password1 or not password2:
+        errors.append("Hasło nie może być puste.")
+
+    if password1 != password2:
+        errors.append("Hasła są różne.")
+
+    if len(password1) > 50:
+        errors.append("Hasło może mieć maksymalnie 50 znaków.")
+
+    try:
+        BITS_REQUIRED = 1  # DEBUG
+        bits = round(password_bits(password1))
+        if bits < BITS_REQUIRED:
+            errors.append(
+                f"Hasło jest zbyt słabe ({bits} bitów, wymagane minimum {BITS_REQUIRED} bitów).")
+    except ValueError:
+        errors.append("Nieprawidłowy znak w haśle. Dozwolone znaki to: \
+            małe i duże litery, cyfry, znaki specjalne: \
+            !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~.")
+
+    return errors
+
+
+def get_ip(request):
+    if not request.environ.get("HTTP_X_FORWARDED_FOR"):
+        return request.environ["REMOTE_ADDR"]
+    else:
+        return request.environ["HTTP_X_FORWARDED_FOR"]

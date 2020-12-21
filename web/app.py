@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, \
     flash, redirect, url_for, g, make_response
+from functools import wraps
 from os import getenv
 from dotenv import load_dotenv
 import utils
@@ -12,9 +13,20 @@ app.secret_key = "only for flash"
 app.config.from_object(__name__)
 
 
+def login_required(function):
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        if not g.get("session").get("username"):
+            flash("Aby wyświetlić tę stronę, musisz być zalogowany.", "danger")
+            return redirect(url_for("index"))
+
+        return function(*args, **kwargs)
+    return wrapper
+
+
 @app.before_request
 def before():
-    session_id = request.cookies.get('session_id')
+    session_id = request.cookies.get("session_id")
     g.session = db.get_session(session_id)
     print(g.session, flush=True)
 
@@ -24,12 +36,12 @@ def inject_dict_for_all_templates():
     return dict(session=g.session)
 
 
-@app.route('/')
+@app.route("/")
 def index():
     return render_template("index.html")
 
 
-@app.route('/login', methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         return render_template("login.html")
@@ -58,7 +70,7 @@ def login():
         correct = False
 
     if correct:
-        db.save_login_attempt(username, True, ip())
+        db.save_login_attempt(username, True, utils.get_ip(request))
 
         session_id = db.set_session(username)
         response = make_response(redirect(url_for("index")))
@@ -68,17 +80,17 @@ def login():
         return response
     else:
         if db.username_taken(username):
-            db.save_login_attempt(username, False, ip())
+            db.save_login_attempt(username, False, utils.get_ip(request))
         return redirect(url_for("login"))
 
 
-@app.route('/logout')
+@app.route("/logout")
 def logout():
     db.clear_session(g.session.get("username"))
     return redirect(url_for("index"))
 
 
-@app.route('/register', methods=["GET", "POST"])
+@app.route("/register", methods=["GET", "POST"])
 def register(fields={}):
     if request.method == "GET":
         return render_template("register.html", fields=fields)
@@ -88,12 +100,12 @@ def register(fields={}):
     password1 = request.form.get("password1")
     password2 = request.form.get("password2")
 
-    errors = check_password(password1, password2)
+    errors = utils.check_password(password1, password2)
 
     if not (username and 3 <= len(username) <= 20 and username.isalpha()):
         errors.append("Nieprawidłowa nazwa użytkownika.")
 
-    if not (email and 3 <= len(username) <= 50):
+    if not (email and 3 <= len(email) <= 50):
         errors.append("Nieprawidłowy adres email.")
 
     if db.username_taken(username):
@@ -110,11 +122,13 @@ def register(fields={}):
 
 
 @app.route("/my-notes")
+@login_required
 def my_notes():
     return render_template("my_notes.html")
 
 
 @app.route("/settings")
+@login_required
 def settings():
     if not g.session.get("username"):
         return redirect(url_for("index"))
@@ -124,64 +138,30 @@ def settings():
 
 
 @app.route("/change-password", methods=["GET", "POST"])
+@login_required
 def change_password():
     if request.method == "GET":
         return render_template("change_password.html")
 
     username = g.session.get("username")
-    if not username:
-        return redirect(url_for("index"))
 
     old = request.form.get("old-password")
     new1 = request.form.get("password1")
     new2 = request.form.get("password2")
 
-    errors = check_password(new1, new2)
+    errors = utils.check_password(new1, new2)
 
     if not db.check_credentials(g.session.get("username"), old):
         errors.append("Nieprawidłowe stare hasło.")
 
     if len(errors) == 0:
         db.change_password(username, new1)
-        flash("Zmieniono hasło.", "success")
+        flash("Hasło zostało zmienione.", "success")
         return redirect(url_for("settings"))
 
     for error in errors:
         flash(error, "danger")
     return redirect(url_for("change_password"))
-
-
-def ip():
-    if not request.environ.get('HTTP_X_FORWARDED_FOR'):
-        return request.environ['REMOTE_ADDR']
-    else:
-        return request.environ['HTTP_X_FORWARDED_FOR']
-
-
-def check_password(password1, password2):
-    errors = []
-
-    if not password1 or not password2:
-        errors.append("Hasło nie może być puste.")
-
-    if password1 != password2:
-        errors.append("Hasła są różne.")
-
-    if len(password1) > 50:
-        errors.append("Hasło może mieć maksymalnie 50 znaków.")
-
-    try:
-        BITS_REQUIRED = 1  # DEBUG
-        bits = round(utils.password_bits(password1))
-        if bits < BITS_REQUIRED:
-            errors.append(
-                f"Hasło jest zbyt słabe ({bits} bitów, wymagane minimum {BITS_REQUIRED} bitów).")
-    except ValueError:
-        errors.append("Nieprawidłowy znak w haśle. Dozwolone znaki to: \
-            małe i duże litery, cyfry, znaki specjalne: \
-            !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~.")
-
-    return errors
 
 
 if __name__ == "__main__":

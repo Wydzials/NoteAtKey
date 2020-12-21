@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import bcrypt
 import secrets
 
+DEBUG = True
 
 load_dotenv()
 cloud_url = getenv("REDIS_URL")
@@ -18,7 +19,10 @@ NEXT_LOGIN_SECONDS_PER_ATTEMPT = 5
 SESSION_TOKEN_BYTES = 32
 SESSION_EXPIRE_SECONDS = 300
 
-BCRYPT_ROUNDS = 10 # DEBUG=10, RELEASE=14
+BCRYPT_ROUNDS = 14
+
+if DEBUG:
+    BCRYPT_ROUNDS = 10
 
 
 # ---------------------------------------------- login, register
