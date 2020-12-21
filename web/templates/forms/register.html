@@ -1,0 +1,33 @@
+{% extends "forms/form_page.html" %}
+
+
+{% block header %}
+Rejestracja
+{% endblock %}
+
+{% block button %}
+Zarejestruj się
+{% endblock %}
+
+
+{% block form %}
+<div class="mb-2">
+    <input type="text" class="form-control" value="{{ fields['username'] }}" name="username" id="username" placeholder="Nazwa użytkownika" autocomplete="off" autofocus>
+    <small class="form-text text-muted">Musi składać się z 3-20 liter.</small>
+</div>
+
+<div class="mb-3">
+    <input type="email" class="form-control" value="{{ fields['email'] }}" name="email" id="email" placeholder="Adres email" autocomplete="off">
+</div>
+
+<div class="mb-3">
+    <input type="password" class="form-control" name="password1" id="password1" placeholder="Hasło">
+</div>
+<div class="mb-3">
+    <input type="password" class="form-control" name="password2" id="password2" placeholder="Powtórz hasło">
+</div>
+{% endblock %}
+
+{% block below %}
+<p>Masz już konto? <a href="{{ url_for('login') }}">Zaloguj się</a></p>
+{% endblock %}

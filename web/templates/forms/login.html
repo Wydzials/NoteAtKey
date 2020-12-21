@@ -1,10 +1,16 @@
-{% extends "form_page.html" %}
+{% extends "forms/form_page.html" %}
+
+
+{% block header %}
+Logowanie
+{% endblock %}
+
+{% block button %}
+Zaloguj się
+{% endblock %}
 
 
 {% block form %}
-
-<h1 class="h3 mb-3 fw-normal">Logowanie</h1>
-
 <div class="mb-3">
     <input type="text" class="form-control" name="username" id="username" placeholder="Nazwa użytkownika" autocomplete="off" required autofocus>
 </div>
@@ -13,10 +19,8 @@
     <input type="password" class="form-control mb-1" name="password" id="password" placeholder="Hasło" required>
     <p class="text-end"><a href="{{ url_for('password_reset') }}">Przypomnij hasło</a></p>
 </div>
-
-<button class="w-100 btn btn-lg btn-primary" type="submit">Zaloguj się</button>
-
 {% endblock %}
+
 
 {% block below %}
 <p>Nie masz konta? <a href="{{ url_for('register') }}">Zarejestruj się</a></p>

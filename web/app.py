@@ -44,7 +44,7 @@ def index():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
-        return render_template("login.html")
+        return render_template("forms/login.html")
 
     username = request.form.get("username")
     password = request.form.get("password")
@@ -93,7 +93,7 @@ def logout():
 @app.route("/register", methods=["GET", "POST"])
 def register(fields={}):
     if request.method == "GET":
-        return render_template("register.html", fields=fields)
+        return render_template("forms/register.html", fields=fields)
 
     username = request.form.get("username")
     email = request.form.get("email")
@@ -118,7 +118,7 @@ def register(fields={}):
     else:
         for error in errors:
             flash(error, "danger")
-        return render_template("register.html", fields={"username": username, "email": email})
+        return render_template("forms/register.html", fields={"username": username, "email": email})
 
 
 @app.route("/my-notes")
@@ -141,7 +141,7 @@ def settings():
 @login_required
 def password_change():
     if request.method == "GET":
-        return render_template("password_change.html")
+        return render_template("forms/password_change.html")
 
     username = g.session.get("username")
 
@@ -168,7 +168,7 @@ def password_change():
 @app.route("/reset-password", methods=["GET", "POST"])
 def password_reset():
     if request.method == "GET":
-        return render_template("password_reset.html")
+        return render_template("forms/password_reset.html")
     
     email = request.form.get("email")
 
@@ -180,15 +180,15 @@ def password_reset():
 
     if db.email_taken(email):
         token = db.request_password_reset(email)
-        return render_template("password_reset.html", token=token, email=email)
+        return render_template("forms/password_reset.html", token=token, email=email)
     
-    return render_template("password_reset.html")
+    return render_template("forms/password_reset.html")
 
 
 @app.route("/reset-password/<token>", methods=["GET", "POST"])
 def password_reset_token(token):
     if request.method == "GET":
-        return render_template("password_reset2.html")
+        return render_template("forms/password_reset2.html")
 
     email = request.form.get("email")
     password1 = request.form.get("password1")
