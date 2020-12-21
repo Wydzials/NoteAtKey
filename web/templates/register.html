@@ -1,32 +1,28 @@
-{% extends "base.html" %}
+{% extends "form_page.html" %}
 
 
-{% block body %}
-<div class="row justify-content-center py-4">
-    <div class="col-4">
-        <form class="mb-3" method="POST" id="form" action="{{ url_for('register') }}">
-            <h1 class="h3 mb-3 fw-normal">Rejestracja</h1>
+{% block form %}
+<h1 class="h3 mb-3 fw-normal">Rejestracja</h1>
 
-            <div class="form-group mb-2">
-                <input type="text" id="username" name="username" value="{{ fields['username'] }}" class="form-control" placeholder="Nazwa użytkownika" autocomplete="off"  autofocus>
-                <small id="username-help" class="form-text text-muted">Musi składać się z 3-20 liter.</small>
-            </div>
-
-            <div class="form-group mb-3">
-                <input type="email" id="email" name="email" value="{{ fields['email'] }}" class="form-control" placeholder="Adres email" autocomplete="off" >
-            </div>
-
-            <div class="form-group mb-3">
-                <input type="password" id="password1" name="password1" class="form-control" placeholder="Hasło" >
-            </div>
-            <div class="form-group mb-3">
-                <input type="password" id="password2" name="password2" class="form-control" placeholder="Powtórz hasło" >
-            </div>
-
-            <button class="w-100 btn btn-lg btn-primary" type="submit">Zarejestruj się</button>
-        </form>
-
-        <p>Masz już konto? <a href="{{ url_for('login') }}">Zaloguj się</a></p>
-    </div>
+<div class="form-group mb-2">
+    <input type="text" id="username" name="username" value="{{ fields['username'] }}" class="form-control" placeholder="Nazwa użytkownika" autocomplete="off" autofocus>
+    <small id="username-help" class="form-text text-muted">Musi składać się z 3-20 liter.</small>
 </div>
+
+<div class="form-group mb-3">
+    <input type="email" id="email" name="email" value="{{ fields['email'] }}" class="form-control" placeholder="Adres email" autocomplete="off">
+</div>
+
+<div class="form-group mb-3">
+    <input type="password" id="password1" name="password1" class="form-control" placeholder="Hasło">
+</div>
+<div class="form-group mb-3">
+    <input type="password" id="password2" name="password2" class="form-control" placeholder="Powtórz hasło">
+</div>
+
+<button class="w-100 btn btn-lg btn-primary" type="submit">Zarejestruj się</button>
+{% endblock %}
+
+{% block below %}
+<p>Masz już konto? <a href="{{ url_for('login') }}">Zaloguj się</a></p>
 {% endblock %}
