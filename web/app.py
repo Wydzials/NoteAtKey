@@ -161,7 +161,7 @@ def password_change():
 
     for error in errors:
         flash(error, "danger")
-    return redirect(url_for("change_password"))
+    return redirect(url_for("password_change"))
 
 
 
@@ -179,7 +179,7 @@ def password_reset():
     flash("Email z linkiem do zmiany hasła został wysłany.", "success")
 
     if db.email_taken(email):
-        token = db.get_password_reset_token(email)
+        token = db.request_password_reset(email)
         return render_template("password_reset.html", token=token, email=email)
     
     return render_template("password_reset.html")
@@ -190,6 +190,7 @@ def password_reset_token(token):
     if request.method == "GET":
         return render_template("password_reset2.html")
 
+    email = request.form.get("email")
     password1 = request.form.get("password1")
     password2 = request.form.get("password2")
 
@@ -199,13 +200,15 @@ def password_reset_token(token):
             flash(error, "danger")
         return redirect(url_for("password_reset_token", token=token))
         
-    success = db.reset_password(token, password1)
+    success = db.reset_password(email, token, password1)
     if success:
         flash("Hasło zostało zmienione", "success")
+        return redirect(url_for("login"))
     else:
-        flash("Błędny link, lub prośba o zmianę hasła wygasła.", "danger")
+        flash("Błędny adres email, lub prośba o zmianę hasła wygasła.", "danger")
+        return redirect(url_for("password_reset_token", token=token))
 
-    return redirect(url_for("login"))
+    
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

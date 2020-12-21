@@ -128,7 +128,7 @@ def change_password(username, password):
     return True
 
 
-def get_password_reset_token(email):
+def request_password_reset(email):
     username = 0
     for user in db.smembers("users"):
         key = f"user:{user}:profile"
@@ -137,14 +137,27 @@ def get_password_reset_token(email):
             break
 
     token = secrets.token_urlsafe(64)
-    db.set(f"password-reset:{token}", username, ex=30)
+    hashed_token = bcrypt.hashpw(token.encode(), bcrypt.gensalt(rounds=BCRYPT_ROUNDS))
+
+    key = f"password-reset:{email}"
+    db.hset(key, "username", username)
+    db.hset(key, "token", hashed_token)
+
+    db.expire(key, 300)
     return token
 
 
-def reset_password(token, password):
-    username = db.get(f"password-reset:{token}")
-    if username:
+def reset_password(email, token, password):
+    reset = db.hgetall(f"password-reset:{email}")
+    if not reset:
+        return False
+
+    username = reset.get("username")
+    hashed_token = reset.get("token")
+
+    if bcrypt.checkpw(token.encode(), hashed_token.encode()):
         change_password(username, password)
+        db.delete(f"password-reset:{email}")
         return True
     return False
 
