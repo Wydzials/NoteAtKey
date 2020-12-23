@@ -1,0 +1,12 @@
+debug: true
+
+# Users
+login_attempts_history_length: 10
+login_attempts_check_minutes: 10
+next_login_seconds_per_attempt: 5
+bcrypt_rounds: 14
+
+# Session
+session_token_bytes: 32
+session_expire_seconds: 300
+

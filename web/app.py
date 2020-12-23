@@ -1,17 +1,17 @@
 from flask import Flask, render_template, request, \
     flash, redirect, url_for, g, make_response
 from functools import wraps
-from os import getenv
-from dotenv import load_dotenv
+from yaml import safe_load
+
 import utils
 import db
+import session
+import notes
 
 
 app = Flask(__name__)
-load_dotenv()
-
 app.secret_key = "only for flash"
-app.config.from_object(__name__)
+config = safe_load(open("config.yaml"))
 
 
 def login_required(function):
@@ -28,7 +28,7 @@ def login_required(function):
 @app.before_request
 def before():
     session_id = request.cookies.get("session_id")
-    g.session = db.get_session(session_id)
+    g.session = session.get(session_id)
     print(g.session, flush=True)
 
 
@@ -40,10 +40,8 @@ def inject_dict_for_all_templates():
 @app.route("/")
 def index():
 
-
-    #DEBUG
-    db.delete_note(g.session.get("note_id"))
-
+    # DEBUG
+    notes.delete(g.session.get("note_id"))
 
     return render_template("index.html")
 
@@ -79,7 +77,7 @@ def login():
     if correct:
         db.save_login_attempt(username, True, utils.get_ip(request))
 
-        session_id = db.set_session(username)
+        session_id = session.set(username)
         response = make_response(redirect(url_for("index")))
         response.set_cookie("session_id", session_id, httponly=True)
 
@@ -93,7 +91,7 @@ def login():
 
 @app.route("/logout")
 def logout():
-    db.clear_session(g.session.get("username"))
+    session.clear(g.session.get("username"))
     return redirect(url_for("index"))
 
 
@@ -225,8 +223,9 @@ def new_note():
     content = request.form.get("content")
     allowed = request.form.get("allowed")
 
-    note_id = db.create_note(g.session.get("username"), title, content, allowed)
-    db.set_session(g.session.get("username"), "note_id", note_id)
+    note_id = notes.create(g.session.get(
+        "username"), title, content, allowed)
+    session.set(g.session.get("username"), "note_id", note_id)
     return redirect(url_for("new_note"))
 
 
