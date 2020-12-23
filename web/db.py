@@ -176,6 +176,12 @@ def reset_password(email, token, password):
     return False
 
 
+def to_local_timezone(utc):
+    local = pytz.timezone("Europe/Warsaw")
+    local_dt = utc.replace(tzinfo=pytz.utc).astimezone(local)
+    return local.normalize(local_dt)
+
+
 # ---------------------------------------------- session
 def get_session(id_):
     session = db.hgetall(f"session:{id_}")
@@ -215,7 +221,37 @@ def clear_session(username):
     set_session_exp(username, 0)
 
 
-def to_local_timezone(utc):
-    local = pytz.timezone("Europe/Warsaw")
-    local_dt = utc.replace(tzinfo=pytz.utc).astimezone(local)
-    return local.normalize(local_dt)
+# ---------------------------------------------- notes
+def create_note(author, title, content, allowed):
+    note_id = secrets.token_urlsafe(32)
+
+    for user in allowed.split(","):
+        user = user.strip()
+        if username_taken(user) and user != author:
+            db.sadd(f"user:{user}:can_read", note_id)
+            db.sadd(f"note:{note_id}:readers", user)
+
+    db.sadd(f"user:{author}:notes", note_id)
+    db.hmset(f"note:{note_id}:content", {
+        "author": author,
+        "title": title,
+        "content": content,
+    })
+    return note_id
+
+
+def delete_note(note_id):
+    if not note_id or not db.exists(f"note:{note_id}:content"):
+        return False
+
+    readers = db.smembers(f"note:{note_id}:readers")
+    for user in readers:
+        db.srem(f"user:{user}:can_read", note_id)
+
+    author = db.hget(f"note:{note_id}:content", "author")
+
+    db.delete(f"note:{note_id}:readers")
+    db.srem(f"user:{author}:notes", note_id)
+    db.delete(f"note:{note_id}:content")
+
+    return True

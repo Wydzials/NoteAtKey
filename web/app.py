@@ -39,6 +39,12 @@ def inject_dict_for_all_templates():
 
 @app.route("/")
 def index():
+
+
+    #DEBUG
+    db.delete_note(g.session.get("note_id"))
+
+
     return render_template("index.html")
 
 
@@ -207,6 +213,21 @@ def password_reset_token(token):
     else:
         flash("Błędny adres email, lub prośba o zmianę hasła wygasła.", "danger")
         return redirect(url_for("password_reset_token", token=token))
+
+
+@app.route("/new-note", methods=["GET", "POST"])
+@login_required
+def new_note():
+    if request.method == "GET":
+        return render_template("new_note.html")
+
+    title = request.form.get("title")
+    content = request.form.get("content")
+    allowed = request.form.get("allowed")
+
+    note_id = db.create_note(g.session.get("username"), title, content, allowed)
+    db.set_session(g.session.get("username"), "note_id", note_id)
+    return redirect(url_for("new_note"))
 
 
 if __name__ == "__main__":
