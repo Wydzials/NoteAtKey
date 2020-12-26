@@ -6,6 +6,15 @@
 <h3>Utwórz notatkę</h3>
 <form method="POST" id="form">
     <div class="row justify-content-center">
+        <div class="col-8">
+            <ul class="list-group">
+                <li class="list-group-item py-3">
+                    <h6 class="my-0">Treść</h6>
+                    <textarea class="form-control" style="height: 20em;" name="content" id="content" autocomplete="off"></textarea>
+                </li>
+            </ul>
+        </div>
+
         <div class="col-4">
             <ul class="list-group">
                 <li class="list-group-item py-3">
@@ -23,17 +32,7 @@
                 </li>
             </ul>
         </div>
-
-        <div class="col-8">
-            <ul class="list-group">
-                <li class="list-group-item py-3">
-                    <h6 class="my-0">Treść</h6>
-                    <textarea class="form-control" style="height: 20em;" name="content" id="content" autocomplete="off"></textarea>
-                </li>
-            </ul>
-        </div>
     </div>
-
 </form>
 
 {% endblock %}

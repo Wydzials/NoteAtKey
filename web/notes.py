@@ -40,3 +40,17 @@ def delete(note_id):
     redis.delete(f"note:{note_id}:content")
 
     return True
+
+
+def get(note_id):
+    note = redis.hgetall(f"note:{note_id}:content")
+    note["id"] = note_id
+    note["readers"] = redis.smembers(f"note:{note_id}:readers")
+    return note
+
+
+def get_my_notes(username):
+    notes = []
+    for note_id in redis.smembers(f"user:{username}:notes"):
+        notes.append(get(note_id))
+    return notes

@@ -39,10 +39,6 @@ def inject_dict_for_all_templates():
 
 @app.route("/")
 def index():
-
-    # DEBUG
-    notes.delete(g.session.get("note_id"))
-
     return render_template("index.html")
 
 
@@ -124,12 +120,6 @@ def register(fields={}):
         for error in errors:
             flash(error, "danger")
         return render_template("forms/register.html", fields={"username": username, "email": email})
-
-
-@app.route("/my-notes")
-@login_required
-def my_notes():
-    return render_template("my_notes.html")
 
 
 @app.route("/settings")
@@ -227,6 +217,22 @@ def new_note():
         "username"), title, content, allowed)
     session.set(g.session.get("username"), "note_id", note_id)
     return redirect(url_for("new_note"))
+
+
+@app.route("/my-notes")
+@login_required
+def my_notes():
+    my_notes = notes.get_my_notes(g.session.get("username"))
+    return render_template("my_notes.html", notes=my_notes)
+
+
+@app.route("/delete-note/<note_id>")
+@login_required
+def delete_note(note_id):
+    note = notes.get(note_id)
+    if note.get("author") == g.session.get("username"):
+        notes.delete(note_id)
+    return redirect(url_for("my_notes"))
 
 
 if __name__ == "__main__":
