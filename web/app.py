@@ -19,7 +19,7 @@ def login_required(function):
     def wrapper(*args, **kwargs):
         if not g.get("session").get("username"):
             flash("Sesja wygasła, zaloguj się ponownie.", "success")
-            return redirect(url_for("index"))
+            return redirect(url_for("login"))
 
         return function(*args, **kwargs)
     return wrapper
@@ -212,10 +212,9 @@ def new_note():
     title = request.form.get("title")
     content = request.form.get("content")
     allowed = request.form.get("allowed")
+    public = request.form.get("public") != None
 
-    note_id = notes.create(g.session.get(
-        "username"), title, content, allowed)
-    session.set(g.session.get("username"), "note_id", note_id)
+    notes.create(g.session.get("username"), title, content, allowed, public)
     return redirect(url_for("new_note"))
 
 
@@ -233,6 +232,12 @@ def delete_note(note_id):
     if note.get("author") == g.session.get("username"):
         notes.delete(note_id)
     return redirect(url_for("my_notes"))
+
+
+@app.route("/public-notes")
+def public_notes():
+    public = notes.get_public()
+    return render_template("public_notes.html", notes=public)
 
 
 if __name__ == "__main__":
