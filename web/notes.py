@@ -29,6 +29,14 @@ def create(author, title, content, allowed, public):
     return note_id
 
 
+def check_readers(readers):
+    for user in readers.split(","):
+        user = user.strip()
+        if len(user) > 0 and not db.username_taken(user):
+            return user
+    return True
+
+
 def delete(note_id):
     if not note_id or not redis.exists(f"note:{note_id}:content"):
         return False

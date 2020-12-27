@@ -10,7 +10,7 @@
             <ul class="list-group">
                 <li class="list-group-item py-3">
                     <h6 class="my-0">Treść</h6>
-                    <textarea class="form-control" style="height: 20em;" name="content" id="content" autocomplete="off"></textarea>
+                    <textarea class="form-control" style="height: 20em;" name="content" id="content" autocomplete="off">{{ content }}</textarea>
                 </li>
             </ul>
         </div>
@@ -19,7 +19,7 @@
             <ul class="list-group">
                 <li class="list-group-item py-3">
                     <h6 class="my-0">Nazwa</h6>
-                    <input type="text" class="form-control" name="title" id="title" autocomplete="off" required>
+                    <input type="text" class="form-control" name="title" id="title" value="{{ title }}" autocomplete="off" required>
                 </li>
 
                 <li class="list-group-item py-3">
@@ -29,7 +29,7 @@
                     </div>
 
                     <h6 class="my-0">Udostępnij użytkownikom</h6>
-                    <textarea class="form-control" style="height: 5em;" name="allowed" id="allowed" autocomplete="off"></textarea>
+                    <textarea class="form-control" style="height: 5em;" name="readers" id="readers" placeholder="Wpisz nazwy użytkowników oddzielone przecinkami" autocomplete="off">{{ readers }}</textarea>
                 </li>
 
                 <li class="list-group-item py-3">

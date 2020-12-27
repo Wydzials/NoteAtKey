@@ -211,11 +211,17 @@ def new_note():
 
     title = request.form.get("title")
     content = request.form.get("content")
-    allowed = request.form.get("allowed")
-    public = request.form.get("public") != None
+    readers = request.form.get("readers")
+    public = (request.form.get("public") != None)
 
-    notes.create(g.session.get("username"), title, content, allowed, public)
-    return redirect(url_for("new_note"))
+    check = public or notes.check_readers(readers)
+    if check != True:
+        flash(f"Nieprawidłowy użytkownik: '{check}'.", "danger")
+        return render_template("new_note.html", title=title, content=content, readers=readers)
+    else:
+        notes.create(g.session.get("username"),
+                     title, content, readers, public)
+        return redirect(url_for("new_note"))
 
 
 @app.route("/my-notes")
