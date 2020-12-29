@@ -41,17 +41,25 @@
                             <li class="nav-item dropdown">
                                 <a class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
                                     {{ session["username"] }}
-                                </a> 
+                                </a>
 
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><h6 class="dropdown-header">Konto</h6></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('new_note') }}">Utwórz notatkę</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('my_notes') }}">Moje notatki</a></li>
+                                    <li>
+                                        <h6 class="dropdown-header text-primary">Notatki</h6>
+                                    </li>
+                                    <li><a class="dropdown-item" href="{{ url_for('new_note') }}">Utwórz</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('my_notes') }}">Zapisane</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('shared_notes') }}">Udostępnione</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                        <h6 class="dropdown-header text-primary">Konto</h6>
+                                    </li>
                                     <li><a class="dropdown-item" href="{{ url_for('settings') }}">Ustawienia</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('password_change') }}">Zmień hasło</a></li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
-                                    <li><a class="dropdown-item" href="{{ url_for('logout') }}">Wyloguj</a></li>
+                                    <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Wyloguj</a></li>
                                 </ul>
                             </li>
                         </ul>

@@ -5,7 +5,7 @@
 
 <div class="row justify-content-center">
     <div class="col-10">
-        <h3>Moje notatki</h3>
+        <h3>Zapisane notatki</h3>
 
         {% if notes|length == 0 %}
         <p class="lead">Nie masz jeszcze żadnych notatek.</p>
@@ -19,7 +19,13 @@
                     {% if note["public"] %}
                     Notatka publiczna
                     {% elif note["readers"]|length > 0 %}
-                    Udostępniono: {{ note["readers"] }}
+                    Udostępniono:
+                    {% for reader in note["readers"] %}
+                    {{ reader }}{{ ", " if not loop.last }} 
+                    {% endfor %}
+
+                    {% else %}
+                    Notatka prywatna
                     {% endif %}
                     
                     <a href="{{ url_for('delete_note', note_id=note['id']) }}" class="card-link float-end">Usuń</a>

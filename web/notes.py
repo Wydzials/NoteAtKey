@@ -16,7 +16,7 @@ def create(author, title, content, allowed, public):
         for user in allowed.split(","):
             user = user.strip()
             if db.username_taken(user) and user != author:
-                redis.sadd(f"user:{user}:can_read", note_id)
+                redis.sadd(f"user:{user}:shared", note_id)
                 redis.sadd(f"note:{note_id}:readers", user)
 
     redis.sadd(f"user:{author}:notes", note_id)
@@ -43,7 +43,7 @@ def delete(note_id):
 
     readers = redis.smembers(f"note:{note_id}:readers")
     for user in readers:
-        redis.srem(f"user:{user}:can_read", note_id)
+        redis.srem(f"user:{user}:shared", note_id)
 
     author = redis.hget(f"note:{note_id}:content", "author")
 
@@ -75,5 +75,12 @@ def get_my_notes(username):
 def get_public():
     notes = []
     for note_id in redis.smembers("public-notes"):
+        notes.append(get(note_id))
+    return notes
+
+
+def get_shared(username):
+    notes = []
+    for note_id in redis.smembers(f"user:{username}:shared"):
         notes.append(get(note_id))
     return notes

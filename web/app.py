@@ -282,3 +282,10 @@ def delete_note(note_id):
 def public_notes():
     public = notes.get_public()
     return render_template("public_notes.html", notes=public)
+
+
+@app.route("/shared-notes")
+@login_required
+def shared_notes():
+    shared = notes.get_shared(g.session.get("username"))
+    return render_template("shared_notes.html", notes=shared)
