@@ -10,3 +10,8 @@ bcrypt_rounds: 14
 session_token_bytes: 32
 session_expire_seconds: 300
 
+# Notes
+max_note_lines: 50
+max_note_length: 4000
+max_note_title_length: 100
+max_note_readers_length: 500

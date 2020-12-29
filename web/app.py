@@ -11,6 +11,8 @@ import notes
 
 app = Flask(__name__)
 app.secret_key = "only for flash"
+
+utils.check_config()
 config = safe_load(open("config.yaml"))
 
 
@@ -214,10 +216,46 @@ def new_note():
     readers = request.form.get("readers")
     public = (request.form.get("public") != None)
 
-    check = public or notes.check_readers(readers)
-    if check != True:
-        flash(f"Nieprawidłowy użytkownik: '{check}'.", "danger")
-        return render_template("new_note.html", title=title, content=content, readers=readers)
+    errors = []
+
+    max_length = config["max_note_length"]
+    max_title_length = config["max_note_title_length"]
+    max_lines = config["max_note_lines"]
+    max_readers_length = config["max_note_readers_length"]
+
+    if len(content) > max_length:
+        errors.append(
+            f"Długość notatki nie może przekraczać {max_length} znaków.")
+
+    if len(title) > max_title_length:
+        errors.append(
+            f"Długość tytułu nie może przekraczać {max_title_length} znaków.")
+
+    if content.count("\n") > max_lines:
+        errors.append(f"Notatka nie może mieć więcej niż {max_lines} linii")
+
+    if len(readers) > max_readers_length:
+        errors.append("Nie można udostępnić notatki aż tylu użytkownikom.")
+
+    if not public and len(errors) == 0:
+        incorrect_reader = notes.check_readers(readers)
+        if incorrect_reader != True:
+            errors.append(f"Nieprawidłowy użytkownik: '{incorrect_reader}'.")
+
+    if len(errors) > 0:
+        for error in errors:
+            flash(error, "danger")
+
+        if (len(content) > max_length * 3 or
+                len(title) > max_title_length * 3 or
+                len(readers) > max_readers_length * 3):
+            return render_template(
+                "new_note.html",
+                title=title[:max_title_length*3],
+                content=content[:max_length*3],
+                readers=readers[:max_readers_length*3])
+        else:
+            return render_template("new_note.html", title=title, content=content, readers=readers)
     else:
         notes.create(g.session.get("username"),
                      title, content, readers, public)
@@ -244,7 +282,3 @@ def delete_note(note_id):
 def public_notes():
     public = notes.get_public()
     return render_template("public_notes.html", notes=public)
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)

@@ -1,7 +1,9 @@
+from flask import request
+from yaml import safe_load
 import string
 import math
-from flask import request
 import pytz
+import sys
 
 
 def password_bits(password):
@@ -61,3 +63,28 @@ def get_ip(request):
         return request.environ["REMOTE_ADDR"]
     else:
         return request.environ["HTTP_X_FORWARDED_FOR"]
+
+
+def check_config():
+    config = safe_load(open("config.yaml"))
+    keys = [
+        "debug",
+        "login_attempts_history_length",
+        "login_attempts_check_minutes",
+        "next_login_seconds_per_attempt",
+        "bcrypt_rounds",
+
+        "session_token_bytes",
+        "session_expire_seconds",
+
+        "max_note_lines",
+        "max_note_length",
+        "max_note_title_length",
+        "max_note_readers_length"
+    ]
+
+    for key in keys:
+        if not config.get(key):
+            print("No argument in config.yaml: " + key + ".", flush=True)
+            sys.exit(4)
+    return True
