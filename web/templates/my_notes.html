@@ -13,24 +13,39 @@
 
         {% for note in notes %}
         <div class="card my-2">
-            <div class="card-body">
-                <h4 class="card-title">{{ note["title"] }} </h4>
-                <h6 class="card-subtitle mb-2 text-muted">
-                    {% if note["public"] %}
-                    Notatka publiczna
-                    {% elif note["readers"]|length > 0 %}
-                    Udostępniono:
-                    {% for reader in note["readers"] %}
-                    {{ reader }}{{ ", " if not loop.last }} 
-                    {% endfor %}
+            <h4 class="card-header">{{ note["title"] }}</h4>
 
-                    {% else %}
-                    Notatka prywatna
-                    {% endif %}
-                    
-                    <a href="{{ url_for('delete_note', note_id=note['id']) }}" class="card-link float-end">Usuń</a>
-                </h6>
-                <p class="card-text" style="white-space: pre-line">{{ note["content"] }}</p>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-9">
+                        <h6 class="card-subtitle mb-2 text-muted small">
+                            {{ note["date"] }} {{ note["time"] }}
+                        </h6>
+
+                        <h6 class="card-subtitle mb-2 text-muted small">
+                            {% if note["public"] %}
+                            Notatka publiczna
+                            {% elif note["readers"]|length > 0 %}
+                            Udostępniono:
+                            {% for reader in note["readers"] %}
+                            {{ reader }}{{ ", " if not loop.last }}
+                            {% endfor %}
+
+                            {% else %}
+                            Notatka prywatna
+                            {% endif %}
+                        </h6>
+                    </div>
+
+                    <div class="col-3">
+                        <a class="btn btn-outline-primary btn-sm float-end" href="{{ url_for('delete_note', note_id=note['id']) }}">Usuń</a>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <p class="card-text" style="white-space: pre-line">{{ note["content"] }}</p>
+                </div>
 
             </div>
         </div>

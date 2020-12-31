@@ -88,3 +88,9 @@ def check_config():
             print("No argument in config.yaml: " + key + ".", flush=True)
             sys.exit(4)
     return True
+
+
+def to_local_timezone(utc):
+    local = pytz.timezone("Europe/Warsaw")
+    local_dt = utc.replace(tzinfo=pytz.utc).astimezone(local)
+    return local.normalize(local_dt)

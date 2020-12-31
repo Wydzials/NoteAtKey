@@ -13,8 +13,12 @@
 
         {% for note in notes %}
         <div class="card my-2">
+            <h4 class="card-header">{{ note["title"] }}</h4>
+
             <div class="card-body">
-                <h4 class="card-title">{{ note["title"] }} </h4>
+                <h6 class="card-subtitle mb-2 text-muted small">
+                    {{ note["date"] }} {{ note["time"] }}
+                </h6>
                 <h6 class="card-subtitle mb-2 text-muted">Autor: {{ note["author"] }}</h6>
                 <p class="card-text" style="white-space: pre-line">{{ note["content"] }}</p>
             </div>

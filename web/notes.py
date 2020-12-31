@@ -1,6 +1,9 @@
 from yaml import safe_load
+from datetime import datetime
 import secrets
 import db
+import pytz
+import utils
 
 
 redis = db.redis
@@ -24,6 +27,7 @@ def create(author, title, content, allowed, public):
         "author": author,
         "title": title,
         "content": content,
+        "datetime": int(datetime.now(pytz.utc).timestamp()),
         "public": int(public)
     })
     return note_id
@@ -60,27 +64,36 @@ def get(note_id):
     note = redis.hgetall(f"note:{note_id}:content")
     note["public"] = (note.get("public") == "1")
     note["id"] = note_id
+
+    utc = datetime.fromtimestamp(float(note["datetime"]), tz=pytz.utc)
+    local = utils.to_local_timezone(utc)
+    note["date"] = local.date()
+    note["time"] = local.time()
+    note["datetime"] = local
+
     if not note.get("public") and redis.exists(f"note:{note_id}:readers"):
         note["readers"] = redis.smembers(f"note:{note_id}:readers")
     return note
 
 
-def get_my_notes(username):
+def get_sorted_notes(key):
     notes = []
-    for note_id in redis.smembers(f"user:{username}:notes"):
+    for note_id in redis.smembers(key):
         notes.append(get(note_id))
+    notes = sorted(notes, key=lambda k: k["datetime"], reverse=True)
     return notes
+
+
+def get_my_notes(username):
+    return get_sorted_notes(f"user:{username}:notes")
 
 
 def get_public():
-    notes = []
-    for note_id in redis.smembers("public-notes"):
-        notes.append(get(note_id))
-    return notes
+    return get_sorted_notes("public-notes")
 
 
 def get_shared(username):
-    notes = []
-    for note_id in redis.smembers(f"user:{username}:shared"):
-        notes.append(get(note_id))
-    return notes
+    return get_sorted_notes(f"user:{username}:shared")
+
+
+

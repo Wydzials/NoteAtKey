@@ -6,6 +6,7 @@ from yaml import safe_load
 import bcrypt
 import secrets
 import pytz
+import utils
 
 
 load_dotenv()
@@ -83,7 +84,7 @@ def get_login_attempts(username):
 def get_login_attempts_localized(username):
     attempts = get_login_attempts(username)
     for attempt in attempts:
-        localized = to_local_timezone(attempt.get("datetime"))
+        localized = utils.to_local_timezone(attempt.get("datetime"))
         attempt["date"] = localized.date()
         attempt["time"] = localized.time()
         attempt.pop("datetime", None)
@@ -164,8 +165,3 @@ def reset_password(email, token, password):
         return True
     return False
 
-
-def to_local_timezone(utc):
-    local = pytz.timezone("Europe/Warsaw")
-    local_dt = utc.replace(tzinfo=pytz.utc).astimezone(local)
-    return local.normalize(local_dt)
