@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, \
     flash, redirect, url_for, g, make_response
 from functools import wraps
 from yaml import safe_load
+from os import getenv
+from dotenv import load_dotenv
 
 import utils
 import db
@@ -10,7 +12,8 @@ import notes
 
 
 app = Flask(__name__)
-app.secret_key = "only for flash"
+load_dotenv()
+app.secret_key = getenv("FLASH_SECRET")
 
 utils.check_config()
 config = safe_load(open("config.yaml"))
@@ -77,7 +80,8 @@ def login():
 
         session_id = session.set(username)
         response = make_response(redirect(url_for("index")))
-        response.set_cookie("session_id", session_id, httponly=True)
+        response.set_cookie("session_id", session_id, httponly=True,
+                            max_age=config["session_expire_seconds"])
 
         flash("Zalogowano pomyślnie!", "success")
         return response
