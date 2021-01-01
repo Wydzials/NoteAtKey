@@ -6,6 +6,9 @@ import pytz
 import sys
 
 
+config = safe_load(open("config.yaml"))
+
+
 def password_bits(password):
     lowercase = string.ascii_lowercase
     uppercase = string.ascii_uppercase
@@ -45,7 +48,7 @@ def check_password(password1, password2):
         errors.append("Hasło może mieć maksymalnie 50 znaków.")
 
     try:
-        BITS_REQUIRED = 1  # DEBUG
+        BITS_REQUIRED = config["min_password_bits"]
         bits = round(password_bits(password1))
         if bits < BITS_REQUIRED:
             errors.append(
@@ -73,6 +76,7 @@ def check_config():
         "login_attempts_check_minutes",
         "next_login_seconds_per_attempt",
         "bcrypt_rounds",
+        "min_password_bits",
 
         "session_token_bytes",
         "session_expire_seconds",

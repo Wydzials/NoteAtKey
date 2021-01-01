@@ -55,15 +55,13 @@ def login():
     username = request.form.get("username")
     password = request.form.get("password")
 
-    correct = True
+    errors = []
 
     if not username or len(username) < 1:
-        flash("Nazwa użytkownika nie może być pusta.", "danger")
-        correct = False
+        errors.append("Nazwa użytkownika nie może być pusta.")
 
     if not password or len(password) < 1:
-        flash("Hasło nie może być puste.", "danger")
-        correct = False
+        errors.append("Hasło nie może być puste.")
 
     seconds_to_login = db.seconds_to_next_login(username)
     if seconds_to_login > 0:
@@ -71,11 +69,10 @@ def login():
             f"Przed kolejną próbą logowania zaczekaj {seconds_to_login} sekund.", "danger")
         return redirect(url_for("login"))
 
-    if correct and not db.check_credentials(username, password):
-        flash("Nieprawidłowa nazwa użytkownika lub hasło.", "danger")
-        correct = False
+    if len(errors) == 0 and not db.check_credentials(username, password):
+        errors.append("Nieprawidłowa nazwa użytkownika lub hasło.")
 
-    if correct:
+    if len(errors) == 0:
         db.save_login_attempt(username, True, utils.get_ip(request))
 
         session_id = session.set(username)
@@ -86,6 +83,9 @@ def login():
         flash("Zalogowano pomyślnie!", "success")
         return response
     else:
+        for error in errors:
+            flash(error, "danger")
+
         if db.username_taken(username):
             db.save_login_attempt(username, False, utils.get_ip(request))
         return redirect(url_for("login"))
@@ -202,7 +202,7 @@ def password_reset_token(token):
 
     success = db.reset_password(email, token, password1)
     if success:
-        flash("Hasło zostało zmienione", "success")
+        flash("Hasło zostało zmienione.", "success")
         return redirect(url_for("login"))
     else:
         flash("Błędny adres email, lub prośba o zmianę hasła wygasła.", "danger")

@@ -15,14 +15,12 @@ redis = Redis.from_url(cloud_url, decode_responses=True) if cloud_url else Redis
     host="redis", decode_responses=True)
 
 config = safe_load(open("config.yaml"))
-if config["debug"]:
-    BCRYPT_ROUNDS = 10
 
 
 def create_user(username, email, password):
     key = f"user:{username}:profile"
     hashed_password = bcrypt.hashpw(
-        password.encode(), bcrypt.gensalt(rounds=BCRYPT_ROUNDS))
+        password.encode(), bcrypt.gensalt(rounds=config["bcrypt_rounds"]))
 
     redis.hset(key, "email", email)
     redis.hset(key, "password", hashed_password)
@@ -125,7 +123,7 @@ def change_password(username, password):
 
     key = f"user:{username}:profile"
     hashed_password = bcrypt.hashpw(
-        password.encode(), bcrypt.gensalt(rounds=BCRYPT_ROUNDS))
+        password.encode(), bcrypt.gensalt(rounds=config["bcrypt_rounds"]))
 
     redis.hset(key, "password", hashed_password)
     return True
@@ -141,7 +139,7 @@ def request_password_reset(email):
 
     token = secrets.token_urlsafe(64)
     hashed_token = bcrypt.hashpw(
-        token.encode(), bcrypt.gensalt(rounds=BCRYPT_ROUNDS))
+        token.encode(), bcrypt.gensalt(rounds=config["bcrypt_rounds"]))
 
     key = f"password-reset:{email}"
     redis.hset(key, "username", username)
@@ -164,4 +162,3 @@ def reset_password(email, token, password):
         redis.delete(f"password-reset:{email}")
         return True
     return False
-
