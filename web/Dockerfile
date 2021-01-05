@@ -5,4 +5,4 @@ ADD requirements.txt /app
 RUN pip3 install -r requirements.txt
 ADD . /app
 EXPOSE 8000
-ENTRYPOINT ["gunicorn", "-w", "2", "-b", "0.0.0.0:8000", "app:app"]
+ENTRYPOINT ["gunicorn", "-w", "2", "-b", "0.0.0.0:8000", "--certfile=certs/cert.pem", "--keyfile=certs/key.pem", "app:app"]

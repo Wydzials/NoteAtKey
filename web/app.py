@@ -77,7 +77,7 @@ def login():
 
         session_id = session.set(username)
         response = make_response(redirect(url_for("index")))
-        response.set_cookie("session_id", session_id, httponly=True,
+        response.set_cookie("session_id", session_id, httponly=True, secure=True,
                             max_age=config["session_expire_seconds"])
 
         flash("Zalogowano pomyślnie!", "success")
