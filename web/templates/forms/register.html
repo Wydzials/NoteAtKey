@@ -12,19 +12,19 @@ Zarejestruj się
 
 {% block form %}
 <div class="mb-2">
-    <input type="text" class="form-control" value="{{ fields['username'] }}" name="username" id="username" placeholder="Nazwa użytkownika" autocomplete="off" autofocus>
+    <input type="text" class="form-control" value="{{ fields['username'] }}" name="username" id="username" placeholder="Nazwa użytkownika" autocomplete="off" autofocus required>
     <small class="form-text text-muted">Musi składać się z 3-20 liter.</small>
 </div>
 
 <div class="mb-3">
-    <input type="email" class="form-control" value="{{ fields['email'] }}" name="email" id="email" placeholder="Adres email" autocomplete="off">
+    <input type="email" class="form-control" value="{{ fields['email'] }}" name="email" id="email" placeholder="Adres email" autocomplete="off" required>
 </div>
 
 <div class="mb-3">
-    <input type="password" class="form-control" name="password1" id="password1" placeholder="Hasło">
+    <input type="password" class="form-control" name="password1" id="password1" placeholder="Hasło" required>
 </div>
 <div class="mb-3">
-    <input type="password" class="form-control" name="password2" id="password2" placeholder="Powtórz hasło">
+    <input type="password" class="form-control" name="password2" id="password2" placeholder="Powtórz hasło" required>
 </div>
 {% endblock %}
 
