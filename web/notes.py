@@ -12,6 +12,8 @@ config = safe_load(open("config.yaml"))
 
 def create(author, title, content, allowed, public):
     note_id = secrets.token_urlsafe(32)
+    while redis.exists(f"note:{note_id}"):
+        note_id = secrets.token_urlsafe(32)
 
     if public:
         redis.sadd("public-notes", note_id)
@@ -31,14 +33,6 @@ def create(author, title, content, allowed, public):
         "public": int(public)
     })
     return note_id
-
-
-def check_readers(readers):
-    for user in readers.split(","):
-        user = user.strip()
-        if len(user) > 0 and not db.username_taken(user):
-            return user
-    return True
 
 
 def delete(note_id):
@@ -66,7 +60,7 @@ def get(note_id):
     note["id"] = note_id
 
     utc = datetime.fromtimestamp(float(note["datetime"]), tz=pytz.utc)
-    local = utils.to_local_timezone(utc)
+    local = utils.to_local_time(utc)
     note["date"] = local.date()
     note["time"] = local.time()
     note["datetime"] = local
@@ -74,6 +68,14 @@ def get(note_id):
     if not note.get("public") and redis.exists(f"note:{note_id}:readers"):
         note["readers"] = redis.smembers(f"note:{note_id}:readers")
     return note
+
+
+def check_readers(readers):
+    for user in readers.split(","):
+        user = user.strip()
+        if len(user) > 0 and not db.username_taken(user):
+            return user
+    return True
 
 
 def get_sorted_notes(key):
@@ -94,6 +96,3 @@ def get_public():
 
 def get_shared(username):
     return get_sorted_notes(f"user:{username}:shared")
-
-
-

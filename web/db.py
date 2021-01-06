@@ -19,12 +19,16 @@ config = safe_load(open("config.yaml"))
 
 def create_user(username, email, password):
     key = f"user:{username}:profile"
+    if username_taken(username):
+        return False
+
     hashed_password = bcrypt.hashpw(
         password.encode(), bcrypt.gensalt(rounds=config["bcrypt_rounds"]))
 
     redis.hset(key, "email", email)
     redis.hset(key, "password", hashed_password)
     redis.sadd("users", username)
+    return True
 
 
 def get_user_data(username):
@@ -69,20 +73,18 @@ def get_login_attempts(username):
 
     for attempt in redis.lrange(key, 0, -1):
         split = attempt.split(";")
-        attempts.append(
-            {
-                "datetime": datetime.fromtimestamp(float(split[0]), tz=pytz.utc),
-                "success": bool(int(split[1])),
-                "ip": split[2]
-            }
-        )
+        attempts.append({
+            "datetime": datetime.fromtimestamp(float(split[0]), tz=pytz.utc),
+            "success": bool(int(split[1])),
+            "ip": split[2]
+        })
     return attempts
 
 
 def get_login_attempts_localized(username):
     attempts = get_login_attempts(username)
     for attempt in attempts:
-        localized = utils.to_local_timezone(attempt.get("datetime"))
+        localized = utils.to_local_time(attempt.get("datetime"))
         attempt["date"] = localized.date()
         attempt["time"] = localized.time()
         attempt.pop("datetime", None)

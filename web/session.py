@@ -15,12 +15,14 @@ def get(id_):
     return session
 
 
-def set(username, key="", value=""):
+def save(username, key="", value=""):
     user_session_key = f"user:{username}:session"
 
     if not redis.hget(user_session_key, "id"):
         id_ = secrets.token_urlsafe(config["session_token_bytes"])
-        print(id_, flush=True)
+        while(redis.exists(f"session:{id_}")):
+            id_ = secrets.token_urlsafe(config["session_token_bytes"])
+
         redis.hset(user_session_key, "id", id_)
         redis.hset(f"session:{id_}", "username", username)
     else:

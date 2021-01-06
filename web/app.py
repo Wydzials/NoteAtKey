@@ -75,7 +75,7 @@ def login():
     if len(errors) == 0:
         db.save_login_attempt(username, True, utils.get_ip(request))
 
-        session_id = session.set(username)
+        session_id = session.save(username)
         response = make_response(redirect(url_for("index")))
         response.set_cookie("session_id", session_id, httponly=True, secure=True,
                             max_age=config["session_expire_seconds"])
