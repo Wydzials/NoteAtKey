@@ -4,6 +4,7 @@ from functools import wraps
 from yaml import safe_load
 from os import getenv
 from dotenv import load_dotenv
+from time import sleep
 
 import utils
 import db
@@ -34,7 +35,6 @@ def login_required(function):
 def before():
     session_id = request.cookies.get("session_id")
     g.session = session.get(session_id)
-    print(g.session, flush=True)
 
 
 @app.context_processor
@@ -118,6 +118,10 @@ def register(fields={}):
     if db.username_taken(username):
         errors.append("Nazwa użytkownika jest zajęta.")
 
+    if len(errors) == 0 and db.email_taken(email):
+        errors.append("Adres email jest zajęty.")
+
+    sleep(0.5)
     if len(errors) == 0:
         db.create_user(username, email, password1)
         flash("Zarejestrowano pomyślnie!", "success")
@@ -242,9 +246,9 @@ def new_note():
         errors.append("Nie można udostępnić notatki aż tylu użytkownikom.")
 
     if not public and len(errors) == 0:
-        incorrect_reader = notes.check_readers(readers)
-        if incorrect_reader != True:
-            errors.append(f"Nieprawidłowy użytkownik: '{incorrect_reader}'.")
+        check_readers = notes.check_readers(readers)
+        if check_readers != True:
+            errors.append(f"Nieprawidłowy użytkownik: '{check_readers}'.")
 
     if len(errors) > 0:
         for error in errors:
@@ -263,6 +267,7 @@ def new_note():
     else:
         notes.create(g.session.get("username"),
                      title, content, readers, public)
+        flash("Notatka została zapisana.", "success")
         return redirect(url_for("new_note"))
 
 

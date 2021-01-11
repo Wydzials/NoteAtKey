@@ -71,12 +71,12 @@ def get_ip(request):
 def check_config():
     config = safe_load(open("config.yaml"))
     keys = [
-        "debug",
         "login_attempts_history_length",
         "login_attempts_check_minutes",
         "next_login_seconds_per_attempt",
-        "bcrypt_rounds",
+        "password_reset_token_bytes",
         "min_password_bits",
+        "bcrypt_rounds",
 
         "session_token_bytes",
         "session_expire_seconds",

@@ -139,7 +139,7 @@ def request_password_reset(email):
             username = user
             break
 
-    token = secrets.token_urlsafe(64)
+    token = secrets.token_urlsafe(config["password_reset_token_bytes"])
     hashed_token = bcrypt.hashpw(
         token.encode(), bcrypt.gensalt(rounds=config["bcrypt_rounds"]))
 

@@ -73,7 +73,7 @@ def get(note_id):
 def check_readers(readers):
     for user in readers.split(","):
         user = user.strip()
-        if len(user) > 0 and not db.username_taken(user):
+        if len(user) > 0 and not (user.isalpha() and db.username_taken(user)):
             return user
     return True
 

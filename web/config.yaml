@@ -1,14 +1,13 @@
-debug: true
-
 # Users
 login_attempts_history_length: 10
 login_attempts_check_minutes: 10
 next_login_seconds_per_attempt: 5
-bcrypt_rounds: 14
+password_reset_token_bytes: 64 # 512 bits
 min_password_bits: 1
+bcrypt_rounds: 14
 
 # Session
-session_token_bytes: 32
+session_token_bytes: 64 # 512 bits
 session_expire_seconds: 300
 
 # Notes
