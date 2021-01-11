@@ -42,6 +42,18 @@ def inject_dict_for_all_templates():
     return dict(session=g.session)
 
 
+@app.errorhandler(404)
+def error404(e):
+    return render_template("error.html", title="Błąd 404",
+                           message="Nie znaleziono strony o podanym adresie."), 404
+
+
+@app.errorhandler(500)
+def erorr500(e):
+    return render_template("error.html", title="Błąd 500",
+                           message="Nieznany błąd serwera."), 500
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
