@@ -19,7 +19,7 @@ config = safe_load(open("config.yaml"))
 
 def create_user(username, email, password):
     key = f"user:{username}:profile"
-    if username_taken(username):
+    if username_taken(username) or email_taken(email):
         return False
 
     hashed_password = bcrypt.hashpw(
@@ -32,6 +32,9 @@ def create_user(username, email, password):
 
 
 def get_user_data(username):
+    if not username_taken(username):
+        return {}
+
     data = redis.hgetall(f"user:{username}:profile")
     data["username"] = username
     data.pop("password", None)
@@ -40,7 +43,7 @@ def get_user_data(username):
 
 
 def check_credentials(username, password):
-    if not redis.sismember("users", username):
+    if not username_taken(username):
         return False
 
     hashed_password = redis.hget(f"user:{username}:profile", "password")
@@ -132,12 +135,15 @@ def change_password(username, password):
 
 
 def request_password_reset(email):
-    username = 0
+    username = ""
     for user in redis.smembers("users"):
         key = f"user:{user}:profile"
         if email == redis.hget(key, "email"):
             username = user
             break
+    
+    if username == "":
+        return False
 
     token = secrets.token_urlsafe(config["password_reset_token_bytes"])
     hashed_token = bcrypt.hashpw(

@@ -13,7 +13,7 @@ def password_bits(password):
     lowercase = string.ascii_lowercase
     uppercase = string.ascii_uppercase
     digits = string.digits
-    special = "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
+    special = "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~"
 
     groups = [lowercase, uppercase, digits, special]
 
@@ -46,6 +46,9 @@ def check_password(password1, password2):
 
     if len(password1) > 50:
         errors.append("Hasło może mieć maksymalnie 50 znaków.")
+
+    if len(errors) > 0:
+        return errors
 
     try:
         BITS_REQUIRED = config["min_password_bits"]

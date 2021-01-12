@@ -10,7 +10,7 @@ redis = db.redis
 config = safe_load(open("config.yaml"))
 
 
-def create(author, title, content, allowed, public):
+def create(author, title, content, readers, public):
     note_id = secrets.token_urlsafe(32)
     while redis.exists(f"note:{note_id}"):
         note_id = secrets.token_urlsafe(32)
@@ -18,7 +18,7 @@ def create(author, title, content, allowed, public):
     if public:
         redis.sadd("public-notes", note_id)
     else:
-        for user in allowed.split(","):
+        for user in readers.split(","):
             user = user.strip()
             if db.username_taken(user) and user != author:
                 redis.sadd(f"user:{user}:shared", note_id)
@@ -46,11 +46,10 @@ def delete(note_id):
     author = redis.hget(f"note:{note_id}:content", "author")
 
     redis.delete(f"note:{note_id}:readers")
-    redis.srem(f"user:{author}:notes", note_id)
     redis.delete(f"note:{note_id}:content")
 
+    redis.srem(f"user:{author}:notes", note_id)
     redis.srem("public-notes", note_id)
-
     return True
 
 

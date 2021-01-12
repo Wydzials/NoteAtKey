@@ -33,8 +33,10 @@ def login_required(function):
 
 @app.before_request
 def before():
+    g.session = {}
     session_id = request.cookies.get("session_id")
-    g.session = session.get(session_id)
+    if session_id:
+        g.session = session.get(session_id)
 
 
 @app.context_processor
@@ -133,12 +135,15 @@ def register(fields={}):
     if len(errors) == 0 and db.email_taken(email):
         errors.append("Adres email jest zajęty.")
 
-    sleep(0.5)
     if len(errors) == 0:
-        db.create_user(username, email, password1)
-        flash("Zarejestrowano pomyślnie!", "success")
+        success = db.create_user(username, email, password1)
+        if success:
+            flash("Zarejestrowano pomyślnie!", "success")
+        else:
+            flash("Nie udało się zarejestrować nowego konta.", "danger")
         return redirect(url_for("index"))
     else:
+        sleep(1)
         for error in errors:
             flash(error, "danger")
         return render_template("forms/register.html", fields={"username": username, "email": email})
@@ -147,9 +152,6 @@ def register(fields={}):
 @app.route("/settings")
 @login_required
 def settings():
-    if not g.session.get("username"):
-        return redirect(url_for("index"))
-
     data = db.get_user_data(g.session.get("username"))
     return render_template("settings.html", user=data)
 
