@@ -76,6 +76,15 @@ def login():
 
     if not password or len(password) < 1:
         errors.append("Hasło nie może być puste.")
+    
+    if len(username) > 50 or len(password) > 50 or not username.isalpha():
+        errors.append("Nieprawidłowa nazwa użytkownika lub hasło.")
+    
+    if len(errors) > 0:
+        for error in errors:
+            flash(error, "danger")
+        return redirect(url_for("login"))
+
 
     seconds_to_login = db.seconds_to_next_login(username)
     if seconds_to_login > 0:
