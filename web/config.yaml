@@ -3,8 +3,8 @@ login_attempts_history_length: 10
 login_attempts_check_minutes: 10
 next_login_seconds_per_attempt: 5
 password_reset_token_bytes: 64 # 512 bits
-min_password_bits: 1
-bcrypt_rounds: 14
+min_password_bits: 70
+bcrypt_rounds: 12
 
 # Session
 session_token_bytes: 64 # 512 bits

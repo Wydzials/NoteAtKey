@@ -194,7 +194,7 @@ def password_reset():
         flash("Adres email jest wymagany.", "danger")
         return redirect(url_for("password_reset"))
 
-    flash("Email z linkiem do zmiany hasła został wysłany.", "success")
+    flash("Jeśli adres był poprawny, wysłano email z linkiem do zmiany hasła.", "success")
 
     if db.email_taken(email):
         token = db.request_password_reset(email)
